@@ -4,6 +4,7 @@ const { check, validationResult } = require("express-validator");
 
 const User = require("../models/User");
 const handleValidationErrors = require("../helpers/handleValidationErrors");
+const jwtMiddleware = require("../helpers/jwtMiddleware");
 
 const router = AsyncRouter();
 
@@ -30,7 +31,7 @@ router.post(
       return res.status(400).send("Passwords do not match");
 
     const user = await User.signUp(req.body.email, req.body.password);
-    res.status(201).send(user);
+    res.status(201).send(user.sanitize());
   }
 );
 
@@ -38,8 +39,23 @@ router.post(
   "/login", 
   [...loginValidators, handleValidationErrors],
   async (req, res) => {
-    
+    const user = await User.findOne({email: req.body.email});
+
+    if(!user || !user.comparePassword(req.body.password))
+      return res.status(400).send("Invalid login information");
+      
+    const token = jwt.sign({
+      _id: user._id,
+    }, "CHANGEME!");
+
+    res.send({token});
   }
 );
+
+router.get("/profile", [jwtMiddleware], async (req, res) => {
+  const user = await User.findOne({_id: req.user._id});
+
+  res.send(user);
+});
 
 module.exports = router;

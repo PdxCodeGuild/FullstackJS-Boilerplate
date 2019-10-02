@@ -28,7 +28,7 @@ const connectDatabase = async (databaseName="fullstackjs-boilerplate", hostname=
   return database;
 }
 
-const startServer = (hostname="localhost", port=1337) => {
+const startServer = (hostname="0.0.0.0", port=1337) => {
   app.listen(port, hostname, async () => {
     await connectDatabase();
     if(process.env.ENV !== "test") 

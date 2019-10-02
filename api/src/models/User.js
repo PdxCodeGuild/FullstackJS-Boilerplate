@@ -35,7 +35,15 @@ userSchema.statics.signUp = async function(email, password) {
 userSchema.methods.hashPassword = function(plainText) {
   this.password = bcrypt.hashSync(plainText, 4);
 };
-
+userSchema.methods.sanitize = function() {
+  return {
+    ...this._doc,
+    password: undefined,
+  }
+}
+userSchema.methods.comparePassword = function(plainText) {
+  return bcrypt.compareSync(plainText, this.password);
+}
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
